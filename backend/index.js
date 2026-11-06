@@ -3,17 +3,17 @@ const cors = require('cors');
 const app = express();
 const PORT = 3000;
 
-app.use(cors()); // Svelte mengakses API
+app.use(cors());
 app.use(express.json());
 
-// Endpoint 1: Menampilkan daftar resep (kategori Seafood sebagai contoh default)
-app.get('/api/recipes', async (req, res) => {
+// 1. Endpoint Pencarian Resep (TheMealDB: search.php?s=chicken)
+app.get('/api/recipes/search', async (req, res) => {
     try {
-        const response = await fetch('https://www.themealdb.com/api/json/v1/1/filter.php?c=Seafood');
-        if (!response.ok) throw new Error('Gagal mengambil data dari TheMealDB');
+        const query = req.query.s || 'chicken';
+        const response = await fetch(`https://www.themealdb.com/api/json/v1/1/search.php?s=${query}`);
+        if (!response.ok) throw new Error('Gagal mengambil data pencarian resep');
         const data = await response.json();
 
-        // Format respons agar mudah dibaca frontend
         res.status(200).json({
             success: true,
             data: data.meals
@@ -23,12 +23,28 @@ app.get('/api/recipes', async (req, res) => {
     }
 });
 
-// Endpoint 2: Menampilkan detail resep berdasarkan ID
+// 2. Endpoint Daftar Kategori (TheMealDB: categories.php)
+app.get('/api/categories', async (req, res) => {
+    try {
+        const response = await fetch('https://www.themealdb.com/api/json/v1/1/categories.php');
+        if (!response.ok) throw new Error('Gagal mengambil daftar kategori');
+        const data = await response.json();
+
+        res.status(200).json({
+            success: true,
+            data: data.categories
+        });
+    } catch (error) {
+        res.status(502).json({ success: false, message: error.message });
+    }
+});
+
+// 3. Endpoint Detail Resep berdasarkan ID (TheMealDB: lookup.php?i=52772)
 app.get('/api/recipes/:id', async (req, res) => {
     try {
         const { id } = req.params;
         const response = await fetch(`https://www.themealdb.com/api/json/v1/1/lookup.php?i=${id}`);
-        if (!response.ok) throw new Error('Gagal mengambil detail dari TheMealDB');
+        if (!response.ok) throw new Error('Gagal mengambil detail resep');
         const data = await response.json();
 
         if (!data.meals) {

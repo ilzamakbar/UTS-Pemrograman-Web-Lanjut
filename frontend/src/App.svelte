@@ -67,7 +67,7 @@
         <h3>Instruksi:</h3>
         <p>{selectedRecipe.strInstructions}</p>
     {:else}
-        <h2>Daftar Resep Seafood</h2>
+        <h2>Daftar Resep Makanan pada (TheMealDB) </h2>
         {#if loading}
             <p>Memuat data...</p>
         {:else}
